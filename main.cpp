@@ -63,6 +63,7 @@ void drive_path (vector<int> path, vector<Coordinate> verticies, int file, vecto
 
         currentHeading = {verticies[nextNode].x - verticies[startNode].x, verticies[nextNode].y - verticies[startNode].y};
         
+        /*
         double distance = coordDistance(startNode, nextNode, verticies);
         double timeToMove = calculate_time(distance);
  
@@ -76,12 +77,18 @@ void drive_path (vector<int> path, vector<Coordinate> verticies, int file, vecto
             moveForDuration(file, 950, 950, -1000, -1000, timeToAngle, "Turning left");
         }
         sleep(1);
+        */
 
-        moveForDuration(file, -1000, -1000, -1000, -1000, timeToMove, "Moving forward");
-
-        
-        
-    
+        setMotorModel(file, -1000, -1000, -1000, -1000);
+        for (auto point : scan) {
+            double distance_in = point.distance / 25.4;
+            if (distance_in > 1 && distance_in < 10 && point.angle > 225 && point.angle < 315) {
+                setMotorModel(file, 0, 0, 0, 0);
+                cout << "Something in the way" << endl;
+                cout << "dist: " << distance_in << ", angle: " << point.angle << endl;
+                return;
+            }
+        }
 
         sleep(1);
 
@@ -102,24 +109,27 @@ void ultrasonic_dist (double &dist) {
     }
 }
 
-void full_lidar_scan (LidarController& lidar, vector<ldlidar::PointData> &scan) {    
-    scan = lidar.GetLidarScan();
-    
-    if (!scan.empty()) {
-        std::cout << "Received " << scan.size() << " points." << std::endl;
+void full_lidar_scan (LidarController& lidar, vector<ldlidar::PointData> &scan) {  
+    while (true){   
+        scan = lidar.GetLidarScan();
         
-        for (const auto& point : scan) {
-            if (point.distance != 0) {
-                double distance_in = point.distance / 25.4;
-                double x = distance_in * std::cos(point.angle * M_PI / 180);
-                double y = distance_in * std::sin(point.angle * M_PI / 180);
+        if (!scan.empty()) {
+            std::cout << "Received " << scan.size() << " points." << std::endl;
+        /*
+            for (const auto& point : scan) {
+                if (point.distance != 0) {
+                    double distance_in = point.distance / 25.4;
+                    double x = distance_in * std::cos(point.angle * M_PI / 180);
+                    double y = distance_in * std::sin(point.angle * M_PI / 180);
 
-                std::cout << "Angle: " << point.angle << "°, Distance: " << distance_in << "in, (x, y): (" << x << ", " << y << ")\n";
+                    std::cout << "Angle: " << point.angle << "°, Distance: " << distance_in << "in, (x, y): (" << x << ", " << y << ")\n";
+                }
             }
+        */
         }
+        
+        usleep(100000); 
     }
-    
-    usleep(100000); 
 }
 
 void full_camera_scan(CameraController& camera, cv::Mat& frame) {

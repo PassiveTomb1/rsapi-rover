@@ -1,0 +1,50 @@
+void drive_path (vector<int> path, vector<Coordinate> verticies, int file, vector<ldlidar::PointData> &scan, cv::Mat& frame) {
+    pair<int, int> prevHeading = {0, 1};
+    pair<int, int> currentHeading;
+    bool hit = false;
+    (void)path;
+    (void)verticies;
+    while (hit == false) {
+        // int startNode = path[i];
+        // int nextNode = path[i + 1];
+
+        // currentHeading = {verticies[nextNode].x - verticies[startNode].x, verticies[nextNode].y - verticies[startNode].y};
+        
+        /*
+        double distance = coordDistance(startNode, nextNode, verticies);
+        double timeToMove = calculate_time(distance);
+ 
+        double angle = calculate_angle(prevHeading.first, prevHeading.second, currentHeading.first, currentHeading.second) * 180 / 3.14;
+        double timeToAngle = calculate_turn_time(angle);
+
+        if (angle < 180) {
+            moveForDuration(file, -950, -950, 1000, 1000, timeToAngle, "Turning right");
+        }
+        else if (angle >= 180) {
+            moveForDuration(file, 950, 950, -1000, -1000, timeToAngle, "Turning left");
+        }
+        sleep(1);
+        */
+
+        setMotorModel(file, -1000, -1000, -1000, -1000);
+        for (auto point : scan) {
+            double distance_in = point.distance / 25.4;
+            if (distance_in > 1 && distance_in < 10 && point.angle > 225 && point.angle < 315) {
+                setMotorModel(file, 0, 0, 0, 0);
+                cout << "Something in the way" << endl;
+                cout << "dist: " << distance_in << ", angle: " << point.angle << endl;
+                hit = true;
+                return;
+            }
+        }
+
+        // sleep(1);
+
+        prevHeading = currentHeading;
+
+    }
+    if(!frame.empty()) {
+        cout << "Not empty frame" << endl;
+    }
+    cout << scan.size() << endl;
+}
